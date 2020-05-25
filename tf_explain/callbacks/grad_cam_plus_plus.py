@@ -8,15 +8,14 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.callbacks import Callback
 
-from tf_explain.core.grad_cam import GradCAM
+from tf_explain.core.grad_cam_plus_plus import GradCAMPLUSPLUS
 
 
-class GradCAMCallback(Callback):
+class GradCAMPLUSPLUSCallback(Callback):
 
     """
-    Perform Grad CAM algorithm for a given input
-    Paper: [Grad-CAM: Visual Explanations from Deep Networks
-            via Gradient-based Localization](https://arxiv.org/abs/1610.02391)
+    Perform Grad CAM PLUS PLUS algorithm for a given input
+    Paper: [Grad-CAM++: Improved Visual Explanations forDeep Convolutional Networks (https://arxiv.org/pdf/1710.11063.pdf)
     """
 
     def __init__(
@@ -26,7 +25,7 @@ class GradCAMCallback(Callback):
         batch_mode,
         last_valcb,
         layer_name=None,
-        output_dir=Path("./logs/grad_cam"),
+        output_dir=Path("./logs/grad_cam_plus_plus"),
     ):
         """
         Constructor.
@@ -37,12 +36,12 @@ class GradCAMCallback(Callback):
             layer_name (str): Targeted layer for GradCAM
             output_dir (str): Output directory path
         """
-        super(GradCAMCallback, self).__init__()
+        super(GradCAMPLUSPLUSCallback, self).__init__()
         self.validation_data = validation_data
         self.layer_name = layer_name
         self.batch_mode = batch_mode
         self.last_valcb = last_valcb
-        if batch_mode:
+        if self.batch_mode:
             self.class_index = []
         else:
             self.class_index = class_index
@@ -54,12 +53,12 @@ class GradCAMCallback(Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         """
-        Draw GradCAM outputs at each epoch end to Tensorboard.
+        Draw GradCAMPLUSPLUS outputs at each epoch end to Tensorboard.
         Args:
             epoch (int): Epoch index
             logs (dict): Additional information on epoch
         """
-        explainer = GradCAM()
+        explainer = GradCAMPLUSPLUS()
         heatmap = explainer.explain(
                 self.validation_data,
                 self.model,
@@ -71,13 +70,10 @@ class GradCAMCallback(Callback):
         if self.first:
             self.first = False
         
-            
-
         # Using the file writer, log the reshaped image.
         with self.file_writer.as_default():
-            tf.summary.image("Grad CAM", np.array([heatmap]), step=epoch)
+            tf.summary.image("Grad CAM PLUS PLUS", np.array([heatmap]), step=epoch)
         
         if self.last_valcb:
                 self.validation_data.next()
-        
         
